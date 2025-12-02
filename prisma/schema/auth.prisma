@@ -1,0 +1,52 @@
+enum UserRole {
+    ADMIN
+    MANAGER
+    EDITOR
+    VIEWER
+    GUEST
+}
+
+model User {
+    id               String    @id @default(uuid())
+    email            String    @unique
+    name             String?
+    passwordHash     String?
+    profilePictureUrl String?
+    resetToken       String?
+    resetTokenExpiry DateTime?
+    createdAt        DateTime  @default(now())
+    updatedAt        DateTime  @updatedAt
+
+    organizationAccess OrganizationAccess[]
+    fileStorage       FileStorage[]
+}
+
+model Organization {
+    id        String   @id @default(uuid())
+    code      String   @unique
+    name      String
+    logoUrl   String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    access        OrganizationAccess[]
+    fileStorage   FileStorage[]
+    knowledgeBases KnowledgeBase[]
+    agents        Agent[]
+}
+
+model OrganizationAccess {
+    id             String       @id @default(uuid())
+    userId         String
+    user           User         @relation(fields: [userId], references: [id])
+    organizationId String
+    organization   Organization @relation(fields: [organizationId], references: [id])
+    roleId         String?
+    role           Role?        @relation(fields: [roleId], references: [id])
+    // legacy enum role kept for backward compatibility
+    legacyRole     UserRole     @default(VIEWER)
+    createdAt      DateTime     @default(now())
+    updatedAt      DateTime     @updatedAt
+
+    @@unique([userId, organizationId])
+}

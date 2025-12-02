@@ -1,0 +1,92 @@
+model KnowledgeBase {
+    id             String   @id @default(uuid())
+    organizationId String
+    organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+    name           String
+    description    String?
+    vectorStoreId  String?   @unique // OpenAI Vector Store ID
+    status         KnowledgeBaseStatus @default(PENDING)
+    createdAt      DateTime  @default(now())
+    updatedAt      DateTime  @updatedAt
+
+    agents         Agent[]
+    trainingFiles  TrainingFile[]
+    trainingWebsites TrainingWebsite[]
+
+    @@unique([organizationId]) // One knowledge base per organization
+    @@index([organizationId])
+    @@index([vectorStoreId])
+}
+
+enum KnowledgeBaseStatus {
+    PENDING
+    CREATING
+    READY
+    ERROR
+}
+
+model TrainingFile {
+    id             String   @id @default(uuid())
+    knowledgeBaseId String
+    knowledgeBase  KnowledgeBase @relation(fields: [knowledgeBaseId], references: [id], onDelete: Cascade)
+    fileStorageId  String
+    fileStorage    FileStorage @relation(fields: [fileStorageId], references: [id], onDelete: Cascade)
+    status         TrainingFileStatus @default(PENDING)
+    errorMessage   String?
+    processedAt    DateTime?
+    createdAt      DateTime  @default(now())
+    updatedAt      DateTime  @updatedAt
+
+    @@index([knowledgeBaseId])
+    @@index([fileStorageId])
+}
+
+enum TrainingFileStatus {
+    PENDING
+    PROCESSING
+    COMPLETED
+    FAILED
+}
+
+model TrainingWebsite {
+    id             String   @id @default(uuid())
+    knowledgeBaseId String
+    knowledgeBase  KnowledgeBase @relation(fields: [knowledgeBaseId], references: [id], onDelete: Cascade)
+    url            String
+    status         TrainingWebsiteStatus @default(PENDING)
+    errorMessage   String?
+    processedAt    DateTime?
+    createdAt      DateTime  @default(now())
+    updatedAt      DateTime  @updatedAt
+
+    @@index([knowledgeBaseId])
+    @@index([url])
+}
+
+enum TrainingWebsiteStatus {
+    PENDING
+    PROCESSING
+    COMPLETED
+    FAILED
+}
+
+model Agent {
+    id             String   @id @default(uuid())
+    organizationId String
+    organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+    knowledgeBaseId String?
+    knowledgeBase  KnowledgeBase? @relation(fields: [knowledgeBaseId], references: [id], onDelete: SetNull)
+    name           String
+    description    String?
+    systemPrompt   String?
+    model          String   @default("gpt-4")
+    temperature    Float    @default(0.7)
+    maxTokens      Int?
+    isActive       Boolean  @default(true)
+    createdAt      DateTime  @default(now())
+    updatedAt      DateTime  @updatedAt
+
+    @@index([organizationId])
+    @@index([knowledgeBaseId])
+}
+

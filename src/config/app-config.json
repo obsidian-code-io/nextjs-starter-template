@@ -1,0 +1,9 @@
+{
+  "app": {
+    "name": "Business Management System",
+    "title": "Business Management System",
+    "description": "Manage your organization, inventory, and operations efficiently",
+    "favicon": "/favicon.svg",
+    "faviconType": "image/svg+xml"
+  }
+}

@@ -1,0 +1,33 @@
+datasource db {
+    provider  = "postgresql"
+}
+
+generator client {
+    provider      = "prisma-client-js"
+    engineType    = "library"
+    binaryTargets = ["native", "darwin-arm64"]
+}
+
+model FileStorage {
+    id            String    @id @default(uuid())
+    fileName      String
+    filePath      String    @unique
+    fileType      String?
+    fileSize      Int?
+    mimeType      String?
+    isSecure      Boolean   @default(false)
+    accessToken   String?   @unique
+    tokenExpiry   DateTime?
+    organizationId String?
+    organization  Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+    userId        String?
+    user          User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    createdAt     DateTime  @default(now())
+    updatedAt     DateTime  @updatedAt
+
+    trainingFiles TrainingFile[]
+
+    @@index([organizationId])
+    @@index([userId])
+    @@index([accessToken])
+}
